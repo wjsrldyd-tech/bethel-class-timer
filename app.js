@@ -254,9 +254,26 @@
   }
 
   /**
-   * @param {number} index
+   * @type {Record<string, ReturnType<typeof setTimeout> | null>}
    */
+  var startBurstTimeouts = {};
+
+  /**
+   * 시작 전광 애니메이션 중단 (재설정 등)
+   * @param {Element | null} card
+   */
+  function cancelStartBurst(card) {
+    if (!card) return;
+    var key = card.getAttribute("data-index") || "0";
+    if (startBurstTimeouts[key]) {
+      clearTimeout(startBurstTimeouts[key]);
+      startBurstTimeouts[key] = null;
+    }
+    card.classList.remove("timer-card--start-burst");
+  }
+
   function resetTimer(index) {
+    cancelStartBurst(cards[index]);
     var t = timers[index];
     t.endAt = null;
     t.remainingSeconds = t.presetSeconds;
@@ -266,8 +283,23 @@
   }
 
   /**
-   * @param {number} index
+   * 시작 버튼으로 타이머가 돌아가기 시작할 때만, 시각 효과 (CSS 애니메이션 길이와 동일)
+   * @param {Element} card
    */
+  function triggerStartBurst(card) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+    cancelStartBurst(card);
+    var key = card.getAttribute("data-index") || "0";
+    void card.offsetWidth;
+    card.classList.add("timer-card--start-burst");
+    startBurstTimeouts[key] = setTimeout(function () {
+      card.classList.remove("timer-card--start-burst");
+      startBurstTimeouts[key] = null;
+    }, 6000);
+  }
+
   function toggleTimer(index) {
     var t = timers[index];
     var sec = getSecondsRemaining(t);
@@ -280,6 +312,7 @@
         sec = t.presetSeconds;
       }
       t.endAt = Date.now() + sec * 1000;
+      if (cards[index]) triggerStartBurst(cards[index]);
     }
     lastFormatted[index] = "";
     syncCard(index);
