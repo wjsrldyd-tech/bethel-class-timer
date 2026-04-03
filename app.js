@@ -304,6 +304,7 @@
     var t = timers[index];
     var sec = getSecondsRemaining(t);
     if (t.endAt !== null) {
+      cancelStartBurst(cards[index]);
       t.remainingSeconds = sec;
       t.endAt = null;
     } else {
