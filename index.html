@@ -4,46 +4,64 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bethel Class Timer</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet" />
+  <!-- 7-segment 스타일 (세로로 긴 디지털) : DSEG7 Classic -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/dseg7-classic@5.2.5/index.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="app">
     <header class="header">
       <h1 class="logo">Bethel Class Timer</h1>
-      <div class="count-toggle" role="group" aria-label="표시할 타이머 개수">
-        <span class="count-label">타이머</span>
-        <button type="button" class="count-btn" data-count="2" aria-pressed="false">2</button>
-        <button type="button" class="count-btn" data-count="3" aria-pressed="true">3</button>
+      <div class="header__end">
+        <div class="count-toggle" role="group" aria-label="표시할 타이머 개수">
+          <span class="count-label">타이머</span>
+          <button type="button" class="count-btn" data-count="1" aria-pressed="true">1</button>
+          <button type="button" class="count-btn" data-count="2" aria-pressed="false">2</button>
+          <button type="button" class="count-btn" data-count="3" aria-pressed="false">3</button>
+        </div>
+        <div class="header__tools">
+          <button type="button" id="btn-zoom-out" class="icon-btn icon-btn--tool" aria-label="숫자 크기 줄이기" title="축소">
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="M8 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <button type="button" id="btn-zoom-in" class="icon-btn icon-btn--tool" aria-label="숫자 크기 키우기" title="확대">
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <button type="button" id="btn-fullscreen" class="icon-btn icon-btn--tool" aria-pressed="false" aria-label="전체 화면" title="전체 화면">
+            <svg class="icon-fs-enter" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+            </svg>
+            <svg class="icon-fs-exit" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" hidden>
+              <path fill="currentColor" d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </header>
 
-    <main class="timer-grid count-3" id="timer-grid">
+    <main class="timer-grid count-1" id="timer-grid">
       <article class="timer-card" data-index="0">
-        <input type="text" class="timer-title" maxlength="40" placeholder="제목" aria-label="타이머 1 제목" />
+        <input type="text" class="timer-title" maxlength="40" placeholder="고등 모의 시험" aria-label="타이머 1 제목" />
         <div class="timer-display" aria-live="polite">00:00</div>
         <div class="timer-actions">
-          <button type="button" class="btn btn-edit" data-action="edit">시간 설정</button>
+          <button type="button" class="btn btn-edit" data-action="edit">타이머 수정</button>
           <button type="button" class="btn btn-reset" data-action="reset">재설정</button>
           <button type="button" class="btn btn-toggle" data-action="toggle">시작</button>
         </div>
       </article>
-      <article class="timer-card" data-index="1">
-        <input type="text" class="timer-title" maxlength="40" placeholder="제목" aria-label="타이머 2 제목" />
+      <article class="timer-card timer-card--slot2" data-index="1">
+        <input type="text" class="timer-title" maxlength="40" placeholder="고등 모의 시험" aria-label="타이머 2 제목" />
         <div class="timer-display" aria-live="polite">00:00</div>
         <div class="timer-actions">
-          <button type="button" class="btn btn-edit" data-action="edit">시간 설정</button>
+          <button type="button" class="btn btn-edit" data-action="edit">타이머 수정</button>
           <button type="button" class="btn btn-reset" data-action="reset">재설정</button>
           <button type="button" class="btn btn-toggle" data-action="toggle">시작</button>
         </div>
       </article>
       <article class="timer-card timer-card--slot3" data-index="2">
-        <input type="text" class="timer-title" maxlength="40" placeholder="제목" aria-label="타이머 3 제목" />
+        <input type="text" class="timer-title" maxlength="40" placeholder="고등 모의 시험" aria-label="타이머 3 제목" />
         <div class="timer-display" aria-live="polite">00:00</div>
         <div class="timer-actions">
-          <button type="button" class="btn btn-edit" data-action="edit">시간 설정</button>
+          <button type="button" class="btn btn-edit" data-action="edit">타이머 수정</button>
           <button type="button" class="btn btn-reset" data-action="reset">재설정</button>
           <button type="button" class="btn btn-toggle" data-action="toggle">시작</button>
         </div>

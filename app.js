@@ -3,6 +3,11 @@
 
   var STORAGE_KEY = "bethel-class-timer-v1";
 
+  var displayScale = 1;
+  var DISPLAY_SCALE_MIN = 0.65;
+  var DISPLAY_SCALE_MAX = 1.45;
+  var DISPLAY_SCALE_STEP = 0.07;
+
   /** @typedef {{ title: string, presetSeconds: number, endAt: number | null, remainingSeconds: number }} TimerState */
 
   /** @type {TimerState[]} */
@@ -12,9 +17,10 @@
     { title: "", presetSeconds: 600, endAt: null, remainingSeconds: 600 },
   ];
 
-  /** @type {2 | 3} */
-  var timerCount = 3;
+  /** @type {1 | 2 | 3} */
+  var timerCount = 1;
 
+  var appRoot = document.querySelector(".app");
   var grid = document.getElementById("timer-grid");
   var cards = document.querySelectorAll(".timer-card");
   var countButtons = document.querySelectorAll(".count-btn");
@@ -24,6 +30,9 @@
   var editSec = document.getElementById("edit-sec");
   var editSave = document.getElementById("edit-save");
   var editCancel = document.getElementById("edit-cancel");
+  var btnFullscreen = document.getElementById("btn-fullscreen");
+  var btnZoomIn = document.getElementById("btn-zoom-in");
+  var btnZoomOut = document.getElementById("btn-zoom-out");
 
   /** @type {number | null} */
   var editTargetIndex = null;
@@ -55,10 +64,15 @@
     return String(m).padStart(2, "0") + ":" + String(r).padStart(2, "0");
   }
 
+  function applyDisplayScale() {
+    document.documentElement.style.setProperty("--timer-display-scale", String(displayScale));
+  }
+
   function persist() {
     try {
       var payload = {
         timerCount: timerCount,
+        displayScale: displayScale,
         timers: timers.map(function (t) {
           return {
             title: t.title,
@@ -79,7 +93,12 @@
       var raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       var data = JSON.parse(raw);
-      if (data.timerCount === 2 || data.timerCount === 3) timerCount = data.timerCount;
+      if (data.timerCount === 1 || data.timerCount === 2 || data.timerCount === 3) {
+        timerCount = data.timerCount;
+      }
+      if (typeof data.displayScale === "number" && data.displayScale >= DISPLAY_SCALE_MIN && data.displayScale <= DISPLAY_SCALE_MAX) {
+        displayScale = data.displayScale;
+      }
       if (Array.isArray(data.timers)) {
         for (var i = 0; i < 3 && i < data.timers.length; i++) {
           var d = data.timers[i];
@@ -125,7 +144,7 @@
     display.textContent = formatMMSS(getSecondsRemaining(t));
     titleInput.value = t.title;
 
-    toggleBtn.textContent = t.endAt !== null ? "일시정지" : "시작";
+    toggleBtn.textContent = t.endAt !== null ? "중지" : "시작";
     toggleBtn.classList.remove("is-running", "is-paused");
     if (t.endAt !== null) {
       toggleBtn.classList.add("is-running");
@@ -164,7 +183,7 @@
         var display = cards[i].querySelector(".timer-display");
         display.textContent = fmt;
         var toggleBtn = cards[i].querySelector(".btn-toggle");
-        toggleBtn.textContent = t.endAt !== null ? "일시정지" : "시작";
+        toggleBtn.textContent = t.endAt !== null ? "중지" : "시작";
         toggleBtn.classList.toggle("is-running", t.endAt !== null);
         toggleBtn.classList.toggle("is-paused", t.endAt === null && sec > 0);
       }
@@ -244,8 +263,10 @@
 
   function setTimerCount(count) {
     timerCount = count;
+    grid.classList.toggle("count-1", count === 1);
     grid.classList.toggle("count-2", count === 2);
     grid.classList.toggle("count-3", count === 3);
+    if (appRoot) appRoot.classList.toggle("app--single", count === 1);
     countButtons.forEach(function (btn) {
       var c = parseInt(btn.getAttribute("data-count"), 10);
       btn.setAttribute("aria-pressed", c === count ? "true" : "false");
@@ -280,7 +301,7 @@
   countButtons.forEach(function (btn) {
     btn.addEventListener("click", function () {
       var c = parseInt(btn.getAttribute("data-count"), 10);
-      if (c === 2 || c === 3) setTimerCount(c);
+      if (c === 1 || c === 2 || c === 3) setTimerCount(c);
     });
   });
 
@@ -301,11 +322,79 @@
     if (e.key === "Escape") closeEditModal();
   });
 
+  function getFullscreenElement() {
+    return (
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.msFullscreenElement ||
+      null
+    );
+  }
+
+  function isAppFullscreen() {
+    return getFullscreenElement() === appRoot;
+  }
+
+  function enterFullscreen() {
+    if (!appRoot) return;
+    var req = appRoot.requestFullscreen || appRoot.webkitRequestFullscreen || appRoot.msRequestFullscreen;
+    if (req) {
+      var p = req.call(appRoot);
+      if (p && typeof p.catch === "function") p.catch(function () {});
+    }
+  }
+
+  function exitFullscreen() {
+    var ex = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if (ex) {
+      var p = ex.call(document);
+      if (p && typeof p.catch === "function") p.catch(function () {});
+    }
+  }
+
+  function updateFullscreenUi() {
+    var active = isAppFullscreen();
+    if (appRoot) appRoot.classList.toggle("is-fs-active", active);
+    if (!btnFullscreen) return;
+    var iconEnter = btnFullscreen.querySelector(".icon-fs-enter");
+    var iconExit = btnFullscreen.querySelector(".icon-fs-exit");
+    if (iconEnter) iconEnter.hidden = active;
+    if (iconExit) iconExit.hidden = !active;
+    btnFullscreen.setAttribute("aria-pressed", active ? "true" : "false");
+    btnFullscreen.setAttribute("aria-label", active ? "전체 화면 종료" : "전체 화면");
+    btnFullscreen.title = active ? "전체 화면 종료" : "전체 화면";
+  }
+
+  if (btnFullscreen && appRoot) {
+    btnFullscreen.addEventListener("click", function () {
+      if (isAppFullscreen()) exitFullscreen();
+      else enterFullscreen();
+    });
+    document.addEventListener("fullscreenchange", updateFullscreenUi);
+    document.addEventListener("webkitfullscreenchange", updateFullscreenUi);
+    document.addEventListener("MSFullscreenChange", updateFullscreenUi);
+  }
+
+  if (btnZoomIn && btnZoomOut) {
+    btnZoomIn.addEventListener("click", function () {
+      displayScale = clamp(displayScale + DISPLAY_SCALE_STEP, DISPLAY_SCALE_MIN, DISPLAY_SCALE_MAX);
+      applyDisplayScale();
+      persist();
+    });
+    btnZoomOut.addEventListener("click", function () {
+      displayScale = clamp(displayScale - DISPLAY_SCALE_STEP, DISPLAY_SCALE_MIN, DISPLAY_SCALE_MAX);
+      applyDisplayScale();
+      persist();
+    });
+  }
+
   load();
+  applyDisplayScale();
   setTimerCount(timerCount);
   for (var j = 0; j < 3; j++) {
     lastFormatted[j] = "";
     syncCard(j);
   }
+  updateFullscreenUi();
   requestAnimationFrame(tick);
 })();
