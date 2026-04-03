@@ -3,6 +3,11 @@
 
   var STORAGE_KEY = "bethel-class-timer-v1";
 
+  /** @typedef {{ id: string, title: string, presetSeconds: number }} TimerPreset */
+
+  /** @type {TimerPreset[]} */
+  var presets = [];
+
   /** @typedef {{ title: string, presetSeconds: number, endAt: number | null, remainingSeconds: number }} TimerState */
 
   /** @type {TimerState[]} */
@@ -26,9 +31,30 @@
   var editSave = document.getElementById("edit-save");
   var editCancel = document.getElementById("edit-cancel");
   var btnFullscreen = document.getElementById("btn-fullscreen");
+  var btnSettings = document.getElementById("btn-settings");
+  var settingsModal = document.getElementById("settings-modal");
+  var presetListEl = document.getElementById("preset-list");
+  var presetApplyTarget = document.getElementById("preset-apply-target");
+  var presetNewTitle = document.getElementById("preset-new-title");
+  var presetNewMin = document.getElementById("preset-new-min");
+  var presetNewSec = document.getElementById("preset-new-sec");
+  var presetAddBtn = document.getElementById("preset-add-btn");
+  var settingsCloseBtn = document.getElementById("settings-close-btn");
 
   /** @type {number | null} */
   var editTargetIndex = null;
+
+  function getDefaultPresets() {
+    return [
+      { id: "default-h", title: "고등 모의 시험", presetSeconds: 6000 },
+      { id: "default-m", title: "중등 모의 시험", presetSeconds: 5400 },
+      { id: "default-s", title: "학력평가", presetSeconds: 2700 },
+    ];
+  }
+
+  function generatePresetId() {
+    return "p_" + Date.now() + "_" + Math.random().toString(36).slice(2, 9);
+  }
 
   function clamp(n, min, max) {
     return Math.min(max, Math.max(min, n));
@@ -61,6 +87,7 @@
     try {
       var payload = {
         timerCount: timerCount,
+        presets: presets,
         timers: timers.map(function (t) {
           return {
             title: t.title,
@@ -83,6 +110,19 @@
       var data = JSON.parse(raw);
       if (data.timerCount === 1 || data.timerCount === 2 || data.timerCount === 3) {
         timerCount = data.timerCount;
+      }
+      if (Array.isArray(data.presets)) {
+        presets = data.presets.filter(function (p) {
+          return (
+            p &&
+            typeof p.id === "string" &&
+            typeof p.title === "string" &&
+            typeof p.presetSeconds === "number" &&
+            p.presetSeconds >= 1
+          );
+        });
+      } else {
+        presets = getDefaultPresets();
       }
       if (Array.isArray(data.timers)) {
         for (var i = 0; i < 3 && i < data.timers.length; i++) {
@@ -358,6 +398,143 @@
     document.addEventListener("fullscreenchange", updateFullscreenUi);
     document.addEventListener("webkitfullscreenchange", updateFullscreenUi);
     document.addEventListener("MSFullscreenChange", updateFullscreenUi);
+  }
+
+  function renderPresetList() {
+    if (!presetListEl) return;
+    presetListEl.innerHTML = "";
+    if (presets.length === 0) {
+      var empty = document.createElement("li");
+      empty.className = "preset-item";
+      empty.textContent = "저장된 프리셋이 없습니다. 아래에서 추가하세요.";
+      empty.style.color = "var(--muted)";
+      presetListEl.appendChild(empty);
+      return;
+    }
+    presets.forEach(function (p) {
+      var li = document.createElement("li");
+      li.className = "preset-item";
+
+      var name = document.createElement("span");
+      name.className = "preset-item__name";
+      name.textContent = p.title;
+
+      var time = document.createElement("span");
+      time.className = "preset-item__time";
+      time.textContent = formatMMSS(p.presetSeconds);
+
+      var actions = document.createElement("div");
+      actions.className = "preset-item__actions";
+
+      var btnApply = document.createElement("button");
+      btnApply.type = "button";
+      btnApply.className = "preset-item__btn preset-item__btn--apply";
+      btnApply.textContent = "적용";
+      btnApply.setAttribute("data-preset-apply", p.id);
+
+      var btnDel = document.createElement("button");
+      btnDel.type = "button";
+      btnDel.className = "preset-item__btn preset-item__btn--del";
+      btnDel.textContent = "삭제";
+      btnDel.setAttribute("data-preset-delete", p.id);
+
+      actions.appendChild(btnApply);
+      actions.appendChild(btnDel);
+      li.appendChild(name);
+      li.appendChild(time);
+      li.appendChild(actions);
+      presetListEl.appendChild(li);
+    });
+  }
+
+  function applyPresetToTimer(presetId) {
+    var p = null;
+    for (var i = 0; i < presets.length; i++) {
+      if (presets[i].id === presetId) {
+        p = presets[i];
+        break;
+      }
+    }
+    if (!p || !presetApplyTarget) return;
+    var ti = clamp(parseInt(presetApplyTarget.value, 10) || 0, 0, 2);
+    var t = timers[ti];
+    t.title = p.title;
+    t.presetSeconds = p.presetSeconds;
+    t.endAt = null;
+    t.remainingSeconds = p.presetSeconds;
+    lastFormatted[ti] = "";
+    syncCard(ti);
+    persist();
+  }
+
+  function deletePreset(presetId) {
+    presets = presets.filter(function (x) {
+      return x.id !== presetId;
+    });
+    persist();
+    renderPresetList();
+  }
+
+  function addPresetFromForm() {
+    if (!presetNewTitle || !presetNewMin || !presetNewSec) return;
+    var title = (presetNewTitle.value || "").trim();
+    if (!title) {
+      window.alert("이름을 입력하세요.");
+      presetNewTitle.focus();
+      return;
+    }
+    var m = clamp(parseInt(presetNewMin.value, 10) || 0, 0, 599);
+    var s = clamp(parseInt(presetNewSec.value, 10) || 0, 0, 59);
+    var total = m * 60 + s;
+    if (total < 1) total = 1;
+    presets.push({ id: generatePresetId(), title: title, presetSeconds: total });
+    presetNewTitle.value = "";
+    presetNewMin.value = "50";
+    presetNewSec.value = "0";
+    persist();
+    renderPresetList();
+  }
+
+  function openSettingsModal() {
+    if (!settingsModal) return;
+    renderPresetList();
+    settingsModal.hidden = false;
+    if (presetNewTitle) presetNewTitle.focus();
+  }
+
+  function closeSettingsModal() {
+    if (!settingsModal) return;
+    settingsModal.hidden = true;
+  }
+
+  if (presetListEl) {
+    presetListEl.addEventListener("click", function (e) {
+      var applyBtn = e.target.closest("[data-preset-apply]");
+      var delBtn = e.target.closest("[data-preset-delete]");
+      if (applyBtn) {
+        applyPresetToTimer(applyBtn.getAttribute("data-preset-apply"));
+      } else if (delBtn) {
+        deletePreset(delBtn.getAttribute("data-preset-delete"));
+      }
+    });
+  }
+
+  if (btnSettings) {
+    btnSettings.addEventListener("click", openSettingsModal);
+  }
+  if (settingsCloseBtn) {
+    settingsCloseBtn.addEventListener("click", closeSettingsModal);
+  }
+  if (settingsModal) {
+    settingsModal.querySelectorAll("[data-close-settings]").forEach(function (el) {
+      el.addEventListener("click", closeSettingsModal);
+    });
+    settingsModal.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeSettingsModal();
+    });
+  }
+  if (presetAddBtn) {
+    presetAddBtn.addEventListener("click", addPresetFromForm);
   }
 
   load();

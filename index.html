@@ -21,6 +21,11 @@
           <button type="button" class="count-btn" data-count="3" aria-pressed="false">3</button>
         </div>
         <div class="header__tools">
+          <button type="button" id="btn-settings" class="icon-btn icon-btn--tool" aria-label="프리셋 설정" title="프리셋 설정">
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+              <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.07-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.74 8.87c-.14.25-.08.57.12.64l2.03 1.58c-.05.31-.08.63-.08.94s.02.63.07.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.14.25.42.36.6.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.27.42.49.42h3.84c.24 0 .44-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.14.48.03.6-.22l1.92-3.32c.14-.25.08-.57-.12-.64l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 15.6 12 3.6 3.6 0 0 1 12 15.6z"/>
+            </svg>
+          </button>
           <button type="button" id="btn-fullscreen" class="icon-btn icon-btn--tool" aria-pressed="false" aria-label="전체 화면" title="전체 화면">
             <svg class="icon-fs-enter" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
               <path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
@@ -65,6 +70,50 @@
 
     <!-- 하단 배너·안내 문구 넣을 자리 (전체화면 시 높이 확보됨) -->
     <footer class="site-footer" role="region" aria-label="하단 안내"></footer>
+  </div>
+
+  <div id="settings-modal" class="modal" hidden>
+    <div class="modal__backdrop" data-close-settings></div>
+    <div class="modal__panel modal__panel--settings" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+      <h2 id="settings-modal-title" class="modal__title">타이머 프리셋</h2>
+      <p class="modal__hint">이름과 시간을 저장해 두었다가 타이머에 한 번에 적용할 수 있습니다. (이 브라우저에만 저장)</p>
+      <div class="preset-apply-bar">
+        <label class="preset-apply-label">
+          적용할 타이머
+          <select id="preset-apply-target" class="preset-select">
+            <option value="0">타이머 1</option>
+            <option value="1">타이머 2</option>
+            <option value="2">타이머 3</option>
+          </select>
+        </label>
+      </div>
+      <ul id="preset-list" class="preset-list"></ul>
+      <div class="preset-add">
+        <h3 class="preset-add__title">프리셋 추가</h3>
+        <div class="preset-add__row">
+          <label class="modal__field modal__field--grow">
+            이름
+            <input type="text" id="preset-new-title" maxlength="40" placeholder="예: 고등 모의 시험" />
+          </label>
+        </div>
+        <div class="modal__fields">
+          <label class="modal__field">
+            분
+            <input type="number" id="preset-new-min" min="0" max="599" value="50" />
+          </label>
+          <label class="modal__field">
+            초
+            <input type="number" id="preset-new-sec" min="0" max="59" value="0" />
+          </label>
+        </div>
+        <div class="modal__actions modal__actions--start">
+          <button type="button" class="btn btn-modal-save" id="preset-add-btn">추가</button>
+        </div>
+      </div>
+      <div class="modal__actions">
+        <button type="button" class="btn btn-modal-cancel" id="settings-close-btn">닫기</button>
+      </div>
+    </div>
   </div>
 
   <div id="edit-modal" class="modal" hidden>
