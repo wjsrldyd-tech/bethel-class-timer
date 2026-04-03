@@ -47,7 +47,7 @@ body {
   flex-direction: column;
 }
 
-/* 2·3개여도 .app 전체 폭 유지 → 헤더(로고·타이머 123)가 화면 좌우 끝에 붙음 */
+/* 상단: 타이머 개수와 무관하게 동일한 메뉴바 스타일 (타이머 영역만 1/2/3에 따라 변함) */
 .header {
   position: relative;
   z-index: 10;
@@ -56,15 +56,11 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 0;
+  padding: 0.65rem 0 0.75rem;
+  margin: 0;
   flex-shrink: 0;
-}
-
-.app--single .header {
-  border-bottom-color: transparent;
-  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .logo {
@@ -74,11 +70,6 @@ body {
   letter-spacing: 0.03em;
   color: #fff;
   opacity: 0.92;
-}
-
-.app--single .logo {
-  font-size: 0.9375rem;
-  font-weight: 400;
 }
 
 .header__end {
@@ -245,10 +236,11 @@ body {
 }
 
 /*
- * 전체화면 + 타이머 1개: 하단 배너 영역 확보, 숫자는 그에 맞게 축소
+ * 전체화면: 상단(헤더) 여백·폭은 타이머 개수와 무관하게 통일, 하단은 배너 영역
  */
 .app.is-fs-active {
   --fs-banner-reserve: clamp(5.5rem, 22vh, 12rem);
+  padding: clamp(0.5rem, 2vh, 1.25rem) clamp(0.75rem, 3vw, 2rem) 0;
 }
 
 .app.is-fs-active .site-footer {
@@ -257,10 +249,6 @@ body {
   margin-top: auto;
   padding-top: 0;
   padding-bottom: env(safe-area-inset-bottom, 0);
-}
-
-.app.app--single.is-fs-active {
-  padding: clamp(0.5rem, 2vh, 1.25rem) clamp(0.75rem, 3vw, 2rem) 0;
 }
 
 .app.app--single.is-fs-active .timer-grid.count-1 {
