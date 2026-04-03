@@ -240,19 +240,33 @@ body {
 }
 
 /*
- * 전체화면 + 타이머 1개: 숫자가 화면 높이의 대략 40~50% 느낌, 살짝 위쪽 (vClock 레퍼런스)
+ * 전체화면 + 타이머 1개: 하단 배너 영역 확보, 숫자는 그에 맞게 축소
  */
+.app.is-fs-active {
+  --fs-banner-reserve: clamp(5.5rem, 22vh, 12rem);
+}
+
+.app.is-fs-active .site-footer {
+  flex-shrink: 0;
+  min-height: var(--fs-banner-reserve);
+  margin-top: auto;
+  padding-top: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
 .app.app--single.is-fs-active {
-  padding: clamp(0.5rem, 2vh, 1.25rem) clamp(0.75rem, 3vw, 2rem) clamp(0.75rem, 2vh, 1.5rem);
+  padding: clamp(0.5rem, 2vh, 1.25rem) clamp(0.75rem, 3vw, 2rem) 0;
 }
 
 .app.app--single.is-fs-active .timer-grid.count-1 {
-  padding: 0.25rem 0 0.5rem;
+  flex: 1;
+  min-height: 0;
+  padding: 0.25rem 0 0.35rem;
 }
 
 .app.app--single.is-fs-active .timer-grid.count-1 .timer-card {
   max-width: 100%;
-  transform: translateY(-4vh);
+  transform: translateY(-2vh);
   padding-top: clamp(0.25rem, 1.5vh, 1rem);
   gap: clamp(0.5rem, 2vh, 1.25rem);
 }
@@ -264,7 +278,8 @@ body {
 
 .app.app--single.is-fs-active .timer-grid.count-1 .timer-display {
   font-family: var(--font-display);
-  font-size: min(46vh, 52vmin, 28rem);
+  /* 배너 높이를 제외한 영역에 맞춤 (예전 46vh보다 작게) */
+  font-size: min(34vh, 46vmin, 22rem);
   line-height: 1.05;
   padding: clamp(0.25rem, 1.5vh, 1.25rem) 0.15rem;
   letter-spacing: 0.06em;
