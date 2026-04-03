@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bethel Class Timer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1 class="logo">Bethel Class Timer</h1>
+      <div class="count-toggle" role="group" aria-label="표시할 타이머 개수">
+        <span class="count-label">타이머</span>
+        <button type="button" class="count-btn" data-count="2" aria-pressed="false">2</button>
+        <button type="button" class="count-btn" data-count="3" aria-pressed="true">3</button>
+      </div>
+    </header>
+
+    <main class="timer-grid count-3" id="timer-grid">
+      <article class="timer-card" data-index="0">
+        <input type="text" class="timer-title" maxlength="40" placeholder="제목" aria-label="타이머 1 제목" />
+        <div class="timer-display" aria-live="polite">00:00</div>
+        <div class="timer-actions">
+          <button type="button" class="btn btn-edit" data-action="edit">시간 설정</button>
+          <button type="button" class="btn btn-reset" data-action="reset">재설정</button>
+          <button type="button" class="btn btn-toggle" data-action="toggle">시작</button>
+        </div>
+      </article>
+      <article class="timer-card" data-index="1">
+        <input type="text" class="timer-title" maxlength="40" placeholder="제목" aria-label="타이머 2 제목" />
+        <div class="timer-display" aria-live="polite">00:00</div>
+        <div class="timer-actions">
+          <button type="button" class="btn btn-edit" data-action="edit">시간 설정</button>
+          <button type="button" class="btn btn-reset" data-action="reset">재설정</button>
+          <button type="button" class="btn btn-toggle" data-action="toggle">시작</button>
+        </div>
+      </article>
+      <article class="timer-card timer-card--slot3" data-index="2">
+        <input type="text" class="timer-title" maxlength="40" placeholder="제목" aria-label="타이머 3 제목" />
+        <div class="timer-display" aria-live="polite">00:00</div>
+        <div class="timer-actions">
+          <button type="button" class="btn btn-edit" data-action="edit">시간 설정</button>
+          <button type="button" class="btn btn-reset" data-action="reset">재설정</button>
+          <button type="button" class="btn btn-toggle" data-action="toggle">시작</button>
+        </div>
+      </article>
+    </main>
+
+    <!-- 후속: 나만의 안내 문구 영역 -->
+    <footer class="site-footer" aria-hidden="true"></footer>
+  </div>
+
+  <div id="edit-modal" class="modal" hidden>
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+      <h2 id="edit-modal-title" class="modal__title">목표 시간</h2>
+      <div class="modal__fields">
+        <label class="modal__field">
+          분
+          <input type="number" id="edit-min" min="0" max="599" value="10" />
+        </label>
+        <label class="modal__field">
+          초
+          <input type="number" id="edit-sec" min="0" max="59" value="0" />
+        </label>
+      </div>
+      <div class="modal__actions">
+        <button type="button" class="btn btn-modal-cancel" id="edit-cancel">취소</button>
+        <button type="button" class="btn btn-modal-save" id="edit-save">적용</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
