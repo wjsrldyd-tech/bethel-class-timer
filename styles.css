@@ -2,8 +2,6 @@
 
 :root {
   --font-display: "DSEG7 Classic", ui-monospace, "Courier New", monospace;
-  /* 스샷 우상단 ± 로 조절 (1 = 기본) */
-  --timer-display-scale: 1;
   --bg: #000000;
   --text: #f0f0f0;
   --muted: #888;
@@ -49,11 +47,7 @@ body {
   flex-direction: column;
 }
 
-/* 2·3개일 때만 가독성 위해 폭 제한 */
-.app:not(.app--single) {
-  max-width: 1200px;
-}
-
+/* 2·3개여도 .app 전체 폭 유지 → 헤더(로고·타이머 123)가 화면 좌우 끝에 붙음 */
 .header {
   display: flex;
   flex-wrap: wrap;
@@ -209,7 +203,7 @@ body {
 
 .timer-grid.count-1 .timer-display {
   font-family: var(--font-display);
-  font-size: calc(clamp(3.25rem, 20vmin, 14rem) * var(--timer-display-scale));
+  font-size: clamp(3.25rem, 20vmin, 14rem);
   font-weight: 700;
   line-height: 1.05;
   padding: clamp(0.35rem, 2.5vh, 1.5rem) 0.2rem;
@@ -270,7 +264,7 @@ body {
 
 .app.app--single.is-fs-active .timer-grid.count-1 .timer-display {
   font-family: var(--font-display);
-  font-size: calc(min(46vh, 52vmin, 28rem) * var(--timer-display-scale));
+  font-size: min(46vh, 52vmin, 28rem);
   line-height: 1.05;
   padding: clamp(0.25rem, 1.5vh, 1.25rem) 0.15rem;
   letter-spacing: 0.06em;
@@ -314,6 +308,73 @@ body {
   gap: 1rem;
 }
 
+/* 2·3개: 타이머 1개 모드와 동일 — 박스 테두리·그라데이션 제거 */
+.app:not(.app--single) .timer-grid {
+  align-items: start;
+  padding: 0.35rem 0 1rem;
+}
+
+.app:not(.app--single) .timer-card {
+  min-width: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: clamp(0.5rem, 2vh, 1.25rem) 0.35rem;
+  gap: clamp(0.65rem, 2vh, 1.15rem);
+}
+
+.app:not(.app--single) .timer-title {
+  font-family: system-ui, -apple-system, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  font-size: clamp(0.9rem, 2.2vw, 1.2rem);
+  font-weight: 400;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.app:not(.app--single) .timer-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.85rem, 11vmin, 6rem);
+  line-height: 1.05;
+  padding: clamp(0.2rem, 1.2vh, 0.85rem) 0.1rem;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-shadow: 0 0 24px rgba(255, 255, 255, 0.1);
+  letter-spacing: 0.05em;
+  color: #fff;
+}
+
+.app:not(.app--single) .timer-grid.count-3 .timer-display {
+  font-size: clamp(1.4rem, 8.5vmin, 4.25rem);
+}
+
+.app:not(.app--single) .timer-actions {
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+}
+
+.app:not(.app--single) .timer-grid .btn {
+  border-radius: 0;
+  padding: 0.42rem 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  box-shadow: none;
+}
+
+/* 전체화면 + 2·3개: 숫자만 조금 키움 */
+.app.is-fs-active:not(.app--single) .timer-display {
+  font-size: clamp(2.2rem, 20vmin, 10rem);
+}
+
+.app.is-fs-active:not(.app--single) .timer-grid.count-3 .timer-display {
+  font-size: clamp(1.65rem, 15vmin, 7rem);
+}
+
 .timer-card.finished {
   animation: flash-done 0.6s ease-out;
 }
@@ -321,12 +382,10 @@ body {
 @keyframes flash-done {
   0%,
   100% {
-    border-color: var(--border);
     box-shadow: none;
   }
   40% {
-    border-color: #ef4444;
-    box-shadow: 0 0 24px rgba(239, 68, 68, 0.35);
+    box-shadow: 0 0 28px rgba(239, 68, 68, 0.55);
   }
 }
 
@@ -348,7 +407,7 @@ body {
 .timer-display {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: calc(clamp(2.5rem, 8vw, 3.5rem) * var(--timer-display-scale));
+  font-size: clamp(2.5rem, 8vw, 3.5rem);
   text-align: center;
   letter-spacing: 0.08em;
   line-height: 1.1;

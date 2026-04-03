@@ -3,11 +3,6 @@
 
   var STORAGE_KEY = "bethel-class-timer-v1";
 
-  var displayScale = 1;
-  var DISPLAY_SCALE_MIN = 0.65;
-  var DISPLAY_SCALE_MAX = 1.45;
-  var DISPLAY_SCALE_STEP = 0.07;
-
   /** @typedef {{ title: string, presetSeconds: number, endAt: number | null, remainingSeconds: number }} TimerState */
 
   /** @type {TimerState[]} */
@@ -31,8 +26,6 @@
   var editSave = document.getElementById("edit-save");
   var editCancel = document.getElementById("edit-cancel");
   var btnFullscreen = document.getElementById("btn-fullscreen");
-  var btnZoomIn = document.getElementById("btn-zoom-in");
-  var btnZoomOut = document.getElementById("btn-zoom-out");
 
   /** @type {number | null} */
   var editTargetIndex = null;
@@ -64,15 +57,10 @@
     return String(m).padStart(2, "0") + ":" + String(r).padStart(2, "0");
   }
 
-  function applyDisplayScale() {
-    document.documentElement.style.setProperty("--timer-display-scale", String(displayScale));
-  }
-
   function persist() {
     try {
       var payload = {
         timerCount: timerCount,
-        displayScale: displayScale,
         timers: timers.map(function (t) {
           return {
             title: t.title,
@@ -95,9 +83,6 @@
       var data = JSON.parse(raw);
       if (data.timerCount === 1 || data.timerCount === 2 || data.timerCount === 3) {
         timerCount = data.timerCount;
-      }
-      if (typeof data.displayScale === "number" && data.displayScale >= DISPLAY_SCALE_MIN && data.displayScale <= DISPLAY_SCALE_MAX) {
-        displayScale = data.displayScale;
       }
       if (Array.isArray(data.timers)) {
         for (var i = 0; i < 3 && i < data.timers.length; i++) {
@@ -375,21 +360,7 @@
     document.addEventListener("MSFullscreenChange", updateFullscreenUi);
   }
 
-  if (btnZoomIn && btnZoomOut) {
-    btnZoomIn.addEventListener("click", function () {
-      displayScale = clamp(displayScale + DISPLAY_SCALE_STEP, DISPLAY_SCALE_MIN, DISPLAY_SCALE_MAX);
-      applyDisplayScale();
-      persist();
-    });
-    btnZoomOut.addEventListener("click", function () {
-      displayScale = clamp(displayScale - DISPLAY_SCALE_STEP, DISPLAY_SCALE_MIN, DISPLAY_SCALE_MAX);
-      applyDisplayScale();
-      persist();
-    });
-  }
-
   load();
-  applyDisplayScale();
   setTimerCount(timerCount);
   for (var j = 0; j < 3; j++) {
     lastFormatted[j] = "";
