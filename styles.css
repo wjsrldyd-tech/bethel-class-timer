@@ -193,7 +193,7 @@ body {
   padding: 0.5rem 0.875rem;
   border: none;
   border-radius: 0;
-  background: rgba(255, 255, 255, 0.06);
+  background: transparent;
   color: #fff;
 }
 
@@ -350,7 +350,7 @@ body {
   padding: 0.425rem 0.5rem;
   border: none;
   border-radius: 0;
-  background: rgba(255, 255, 255, 0.06);
+  background: transparent;
   color: #fff;
 }
 
