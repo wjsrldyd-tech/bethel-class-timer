@@ -20,6 +20,9 @@
   /** @type {1 | 2 | 3} */
   var timerCount = 1;
 
+  var TAB_TITLE_BASE = "벧엘 타이머";
+  var lastTabTitle = "";
+
   var appRoot = document.querySelector(".app");
   var grid = document.getElementById("timer-grid");
   var cards = document.querySelectorAll(".timer-card");
@@ -88,6 +91,28 @@
     var m = Math.floor(s / 60);
     var r = s % 60;
     return String(m).padStart(2, "0") + ":" + String(r).padStart(2, "0");
+  }
+
+  /**
+   * @param {Date} d
+   * @returns {string}
+   */
+  function formatHHMM(d) {
+    var h24 = d.getHours();
+    var mm = String(d.getMinutes()).padStart(2, "0");
+    var ampm = h24 >= 12 ? "PM" : "AM";
+    var h12 = h24 % 12;
+    if (h12 === 0) h12 = 12;
+    return ampm + " " + String(h12) + ":" + mm;
+  }
+
+  function syncTabTitle() {
+    var now = new Date();
+    var next = TAB_TITLE_BASE + " · " + formatHHMM(now);
+    if (next !== lastTabTitle) {
+      document.title = next;
+      lastTabTitle = next;
+    }
   }
 
   function persist() {
@@ -189,6 +214,7 @@
   var lastFormatted = ["", "", ""];
 
   function tick() {
+    syncTabTitle();
     for (var i = 0; i < 3; i++) {
       var t = timers[i];
       if (t.endAt !== null && Date.now() >= t.endAt) {
@@ -320,6 +346,14 @@
         sec = t.presetSeconds;
       }
       t.endAt = Date.now() + sec * 1000;
+      try {
+        var startVoice = new Audio("assets/audio/exam-start.mp3");
+        startVoice.volume = 0.8;
+        var p = startVoice.play();
+        if (p && typeof p.catch === "function") p.catch(function () {});
+      } catch (e) {
+        /* ignore */
+      }
       if (cards[index]) triggerStartBurst(cards[index]);
     }
     lastFormatted[index] = "";
@@ -696,6 +730,7 @@
   }
 
   load();
+  syncTabTitle();
   setTimerCount(timerCount);
   for (var j = 0; j < 3; j++) {
     lastFormatted[j] = "";
