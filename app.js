@@ -31,6 +31,7 @@
   var editSave = document.getElementById("edit-save");
   var editCancel = document.getElementById("edit-cancel");
   var btnFullscreen = document.getElementById("btn-fullscreen");
+  var btnPresets = document.getElementById("btn-presets");
   var btnSettings = document.getElementById("btn-settings");
   var settingsModal = document.getElementById("settings-modal");
   var presetListEl = document.getElementById("preset-list");
@@ -40,6 +41,12 @@
   var presetNewSec = document.getElementById("preset-new-sec");
   var presetAddBtn = document.getElementById("preset-add-btn");
   var settingsCloseBtn = document.getElementById("settings-close-btn");
+
+  var presetPickerModal = document.getElementById("preset-picker-modal");
+  var presetPickerListEl = document.getElementById("preset-picker-list");
+  var presetPickerTarget = document.getElementById("preset-picker-target");
+  var presetPickerCloseBtn = document.getElementById("preset-picker-close-btn");
+  var presetPickerManageBtn = document.getElementById("preset-picker-manage-btn");
 
   /** @type {number | null} */
   var editTargetIndex = null;
@@ -330,6 +337,8 @@
       var c = parseInt(btn.getAttribute("data-count"), 10);
       btn.setAttribute("aria-pressed", c === count ? "true" : "false");
     });
+    syncApplyTargetOptions(presetApplyTarget);
+    syncApplyTargetOptions(presetPickerTarget);
     persist();
   }
 
@@ -481,7 +490,27 @@
     });
   }
 
-  function applyPresetToTimer(presetId) {
+  /**
+   * @param {HTMLSelectElement | null} selectEl
+   */
+  function syncApplyTargetOptions(selectEl) {
+    if (!selectEl) return;
+    for (var i = 0; i < 3; i++) {
+      var opt = selectEl.querySelector('option[value="' + i + '"]');
+      if (!opt) continue;
+      var enabled = i < timerCount;
+      opt.disabled = !enabled;
+      opt.hidden = !enabled;
+    }
+    var current = clamp(parseInt(selectEl.value, 10) || 0, 0, 2);
+    if (current >= timerCount) selectEl.value = "0";
+  }
+
+  /**
+   * @param {string} presetId
+   * @param {number} targetIndex
+   */
+  function applyPresetToTimerIndex(presetId, targetIndex) {
     var p = null;
     for (var i = 0; i < presets.length; i++) {
       if (presets[i].id === presetId) {
@@ -489,8 +518,8 @@
         break;
       }
     }
-    if (!p || !presetApplyTarget) return;
-    var ti = clamp(parseInt(presetApplyTarget.value, 10) || 0, 0, 2);
+    if (!p) return;
+    var ti = clamp(targetIndex, 0, 2);
     var t = timers[ti];
     t.title = p.title;
     t.presetSeconds = p.presetSeconds;
@@ -499,6 +528,66 @@
     lastFormatted[ti] = "";
     syncCard(ti);
     persist();
+  }
+
+  function applyPresetToTimer(presetId) {
+    if (!presetApplyTarget) return;
+    syncApplyTargetOptions(presetApplyTarget);
+    var ti = clamp(parseInt(presetApplyTarget.value, 10) || 0, 0, 2);
+    applyPresetToTimerIndex(presetId, ti);
+  }
+
+  function renderPresetPickerList() {
+    if (!presetPickerListEl) return;
+    presetPickerListEl.innerHTML = "";
+    if (presets.length === 0) {
+      var empty = document.createElement("li");
+      empty.className = "preset-item";
+      empty.textContent = "저장된 프리셋이 없습니다. 설정에서 추가하세요.";
+      empty.style.color = "var(--muted)";
+      presetPickerListEl.appendChild(empty);
+      return;
+    }
+    presets.forEach(function (p) {
+      var li = document.createElement("li");
+      li.className = "preset-item";
+
+      var name = document.createElement("span");
+      name.className = "preset-item__name";
+      name.textContent = p.title;
+
+      var time = document.createElement("span");
+      time.className = "preset-item__time";
+      time.textContent = formatMMSS(p.presetSeconds);
+
+      var actions = document.createElement("div");
+      actions.className = "preset-item__actions";
+
+      var btnApply = document.createElement("button");
+      btnApply.type = "button";
+      btnApply.className = "preset-item__btn preset-item__btn--apply";
+      btnApply.textContent = "적용";
+      btnApply.setAttribute("data-picker-apply", p.id);
+
+      actions.appendChild(btnApply);
+      li.appendChild(name);
+      li.appendChild(time);
+      li.appendChild(actions);
+      presetPickerListEl.appendChild(li);
+    });
+  }
+
+  function openPresetPickerModal() {
+    if (!presetPickerModal) return;
+    syncApplyTargetOptions(presetPickerTarget);
+    renderPresetPickerList();
+    presetPickerModal.hidden = false;
+    if (presetPickerTarget) presetPickerTarget.focus();
+  }
+
+  function closePresetPickerModal() {
+    if (!presetPickerModal) return;
+    presetPickerModal.hidden = true;
   }
 
   function deletePreset(presetId) {
@@ -531,6 +620,7 @@
 
   function openSettingsModal() {
     if (!settingsModal) return;
+    syncApplyTargetOptions(presetApplyTarget);
     renderPresetList();
     settingsModal.hidden = false;
     if (presetNewTitle) presetNewTitle.focus();
@@ -550,6 +640,40 @@
       } else if (delBtn) {
         deletePreset(delBtn.getAttribute("data-preset-delete"));
       }
+    });
+  }
+
+  if (presetPickerListEl) {
+    presetPickerListEl.addEventListener("click", function (e) {
+      var applyBtn = e.target.closest("[data-picker-apply]");
+      if (!applyBtn) return;
+      var presetId = applyBtn.getAttribute("data-picker-apply");
+      if (!presetId) return;
+      syncApplyTargetOptions(presetPickerTarget);
+      var ti = presetPickerTarget ? clamp(parseInt(presetPickerTarget.value, 10) || 0, 0, 2) : 0;
+      applyPresetToTimerIndex(presetId, ti);
+      closePresetPickerModal();
+    });
+  }
+
+  if (btnPresets) {
+    btnPresets.addEventListener("click", openPresetPickerModal);
+  }
+  if (presetPickerCloseBtn) {
+    presetPickerCloseBtn.addEventListener("click", closePresetPickerModal);
+  }
+  if (presetPickerManageBtn) {
+    presetPickerManageBtn.addEventListener("click", function () {
+      closePresetPickerModal();
+      openSettingsModal();
+    });
+  }
+  if (presetPickerModal) {
+    presetPickerModal.querySelectorAll("[data-close-preset-picker]").forEach(function (el) {
+      el.addEventListener("click", closePresetPickerModal);
+    });
+    presetPickerModal.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closePresetPickerModal();
     });
   }
 
