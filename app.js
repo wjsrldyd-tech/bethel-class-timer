@@ -23,6 +23,9 @@
   var TAB_TITLE_BASE = "벧엘 타이머";
   var lastTabTitle = "";
 
+  /** @type {(number | null)[]} */
+  var lastSecondsRemaining = [null, null, null];
+
   var appRoot = document.querySelector(".app");
   var grid = document.getElementById("timer-grid");
   var cards = document.querySelectorAll(".timer-card");
@@ -112,6 +115,21 @@
     if (next !== lastTabTitle) {
       document.title = next;
       lastTabTitle = next;
+    }
+  }
+
+  /**
+   * @param {string} src
+   * @param {number} volume
+   */
+  function playAudio(src, volume) {
+    try {
+      var a = new Audio(src);
+      a.volume = clamp(volume, 0, 1);
+      var p = a.play();
+      if (p && typeof p.catch === "function") p.catch(function () {});
+    } catch (e) {
+      /* ignore */
     }
   }
 
@@ -217,17 +235,19 @@
     syncTabTitle();
     for (var i = 0; i < 3; i++) {
       var t = timers[i];
+      var secNow = getSecondsRemaining(t);
+      var prevSec = lastSecondsRemaining[i];
+
+      if (t.endAt !== null && prevSec !== null) {
+        if (prevSec > 20 * 60 && secNow <= 20 * 60) playAudio("assets/audio/20m.mp3", 0.9);
+        if (prevSec > 10 * 60 && secNow <= 10 * 60) playAudio("assets/audio/10m.mp3", 0.9);
+        if (prevSec > 5 * 60 && secNow <= 5 * 60) playAudio("assets/audio/5m.mp3", 0.9);
+      }
+
       if (t.endAt !== null && Date.now() >= t.endAt) {
         t.endAt = null;
         t.remainingSeconds = 0;
-        try {
-          var endVoice = new Audio("assets/audio/exam-end.mp3");
-          endVoice.volume = 0.9;
-          var endP = endVoice.play();
-          if (endP && typeof endP.catch === "function") endP.catch(function () {});
-        } catch (e) {
-          /* ignore */
-        }
+        playAudio("assets/audio/exam-end.mp3", 0.9);
         var c = cards[i];
         c.classList.remove("finished");
         void c.offsetWidth;
@@ -242,7 +262,7 @@
         );
         persist();
       }
-      var sec = getSecondsRemaining(t);
+      var sec = secNow;
       var fmt = formatMMSS(sec);
       if (fmt !== lastFormatted[i]) {
         lastFormatted[i] = fmt;
@@ -253,6 +273,8 @@
         toggleBtn.classList.toggle("is-running", t.endAt !== null);
         toggleBtn.classList.toggle("is-paused", t.endAt === null && sec > 0);
       }
+
+      lastSecondsRemaining[i] = sec;
     }
     requestAnimationFrame(tick);
   }
@@ -319,6 +341,7 @@
     t.endAt = null;
     t.remainingSeconds = t.presetSeconds;
     lastFormatted[index] = "";
+    lastSecondsRemaining[index] = t.remainingSeconds;
     syncCard(index);
     persist();
   }
@@ -348,6 +371,7 @@
       cancelStartBurst(cards[index]);
       t.remainingSeconds = sec;
       t.endAt = null;
+      lastSecondsRemaining[index] = t.remainingSeconds;
     } else {
       if (sec <= 0) {
         t.remainingSeconds = t.presetSeconds;
@@ -355,14 +379,7 @@
       }
       t.endAt = Date.now() + sec * 1000;
       setTimeout(function () {
-        try {
-          var startVoice = new Audio("assets/audio/exam-start.mp3");
-          startVoice.volume = 0.8;
-          var p = startVoice.play();
-          if (p && typeof p.catch === "function") p.catch(function () {});
-        } catch (e) {
-          /* ignore */
-        }
+        playAudio("assets/audio/exam-start.mp3", 0.8);
       }, 500);
       if (cards[index]) triggerStartBurst(cards[index]);
     }
@@ -744,6 +761,7 @@
   setTimerCount(timerCount);
   for (var j = 0; j < 3; j++) {
     lastFormatted[j] = "";
+    lastSecondsRemaining[j] = getSecondsRemaining(timers[j]);
     syncCard(j);
   }
   updateFullscreenUi();
