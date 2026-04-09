@@ -220,6 +220,14 @@
       if (t.endAt !== null && Date.now() >= t.endAt) {
         t.endAt = null;
         t.remainingSeconds = 0;
+        try {
+          var endVoice = new Audio("assets/audio/exam-end.mp3");
+          endVoice.volume = 0.9;
+          var endP = endVoice.play();
+          if (endP && typeof endP.catch === "function") endP.catch(function () {});
+        } catch (e) {
+          /* ignore */
+        }
         var c = cards[i];
         c.classList.remove("finished");
         void c.offsetWidth;
