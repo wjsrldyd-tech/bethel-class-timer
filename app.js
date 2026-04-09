@@ -346,14 +346,16 @@
         sec = t.presetSeconds;
       }
       t.endAt = Date.now() + sec * 1000;
-      try {
-        var startVoice = new Audio("assets/audio/exam-start.mp3");
-        startVoice.volume = 0.8;
-        var p = startVoice.play();
-        if (p && typeof p.catch === "function") p.catch(function () {});
-      } catch (e) {
-        /* ignore */
-      }
+      setTimeout(function () {
+        try {
+          var startVoice = new Audio("assets/audio/exam-start.mp3");
+          startVoice.volume = 0.8;
+          var p = startVoice.play();
+          if (p && typeof p.catch === "function") p.catch(function () {});
+        } catch (e) {
+          /* ignore */
+        }
+      }, 500);
       if (cards[index]) triggerStartBurst(cards[index]);
     }
     lastFormatted[index] = "";
