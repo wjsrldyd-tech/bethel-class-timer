@@ -412,7 +412,7 @@ body {
   pointer-events: none;
   z-index: 0;
   border-radius: 2px;
-  animation: timer-start-aura 6s ease-in-out forwards;
+  animation: timer-start-aura 20s ease-in-out forwards;
   opacity: 0;
   box-shadow:
     0 0 0 2px rgba(255, 255, 255, 0.55),
@@ -421,7 +421,7 @@ body {
 }
 
 .timer-card.timer-card--start-burst .timer-display {
-  animation: timer-start-display 6s ease-in-out forwards;
+  animation: timer-start-display 20s ease-in-out forwards;
 }
 
 @keyframes timer-start-aura {
@@ -429,35 +429,38 @@ body {
     opacity: 0;
     transform: scale(0.98);
   }
-  /* 느린 전광: 큰 맥밍 몇 번만 (약 1.2~1.4초 간격) */
-  10% {
+  /* 전광: 멘트 구간에 맞춰 맥동 (기존 대비 4배 체감) */
+  3% {
     opacity: 1;
     transform: scale(1);
   }
-  22% {
-    opacity: 0.22;
-  }
-  34% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  46% {
-    opacity: 0.24;
-  }
-  58% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  70% {
-    opacity: 0.26;
-  }
-  80% {
-    opacity: 0.9;
-    transform: scale(1);
-  }
-  92% {
-    opacity: 0.3;
-  }
+  6% { opacity: 0.24; }
+  9% { opacity: 1; transform: scale(1); }
+  12% { opacity: 0.24; }
+  15% { opacity: 1; transform: scale(1); }
+  18% { opacity: 0.24; }
+  21% { opacity: 1; transform: scale(1); }
+  24% { opacity: 0.24; }
+  27% { opacity: 1; transform: scale(1); }
+  30% { opacity: 0.24; }
+  33% { opacity: 1; transform: scale(1); }
+  36% { opacity: 0.24; }
+  39% { opacity: 1; transform: scale(1); }
+  42% { opacity: 0.24; }
+  45% { opacity: 1; transform: scale(1); }
+  48% { opacity: 0.24; }
+  51% { opacity: 1; transform: scale(1); }
+  54% { opacity: 0.24; }
+  57% { opacity: 1; transform: scale(1); }
+  60% { opacity: 0.24; }
+  63% { opacity: 1; transform: scale(1); }
+  66% { opacity: 0.24; }
+  69% { opacity: 1; transform: scale(1); }
+  72% { opacity: 0.24; }
+  75% { opacity: 1; transform: scale(1); }
+  78% { opacity: 0.9; transform: scale(1); }
+  84% { opacity: 0.32; }
+  92% { opacity: 0.32; }
   100% {
     opacity: 0;
     transform: scale(1.006);
@@ -470,34 +473,39 @@ body {
     transform: scale(1);
     filter: none;
   }
-  10% {
+  3% {
     transform: scale(1.035);
     filter: drop-shadow(0 0 34px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 44px rgba(34, 197, 94, 0.95));
   }
-  22% {
+  6% {
     transform: scale(1);
     filter: none;
   }
-  34% {
-    transform: scale(1.032);
-    filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 40px rgba(34, 197, 94, 0.9));
-  }
-  46% {
-    transform: scale(1);
-    filter: none;
-  }
-  58% {
-    transform: scale(1.03);
-    filter: drop-shadow(0 0 32px rgba(255, 255, 255, 0.7)) drop-shadow(0 0 36px rgba(34, 197, 94, 0.85));
-  }
-  70% {
-    transform: scale(1);
-    filter: none;
-  }
-  80% {
-    transform: scale(1.025);
-    filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.55)) drop-shadow(0 0 30px rgba(34, 197, 94, 0.75));
-  }
+  9% { transform: scale(1.032); filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 40px rgba(34, 197, 94, 0.9)); }
+  12% { transform: scale(1); filter: none; }
+  15% { transform: scale(1.03); filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.78)) drop-shadow(0 0 38px rgba(34, 197, 94, 0.86)); }
+  18% { transform: scale(1); filter: none; }
+  21% { transform: scale(1.028); filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.72)) drop-shadow(0 0 36px rgba(34, 197, 94, 0.82)); }
+  24% { transform: scale(1); filter: none; }
+  27% { transform: scale(1.026); filter: drop-shadow(0 0 28px rgba(255, 255, 255, 0.66)) drop-shadow(0 0 34px rgba(34, 197, 94, 0.78)); }
+  30% { transform: scale(1); filter: none; }
+  33% { transform: scale(1.025); filter: drop-shadow(0 0 26px rgba(255, 255, 255, 0.62)) drop-shadow(0 0 32px rgba(34, 197, 94, 0.74)); }
+  36% { transform: scale(1); filter: none; }
+  39% { transform: scale(1.024); filter: drop-shadow(0 0 26px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 30px rgba(34, 197, 94, 0.72)); }
+  42% { transform: scale(1); filter: none; }
+  45% { transform: scale(1.023); filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.58)) drop-shadow(0 0 28px rgba(34, 197, 94, 0.7)); }
+  48% { transform: scale(1); filter: none; }
+  51% { transform: scale(1.022); filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.56)) drop-shadow(0 0 26px rgba(34, 197, 94, 0.68)); }
+  54% { transform: scale(1); filter: none; }
+  57% { transform: scale(1.021); filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.54)) drop-shadow(0 0 26px rgba(34, 197, 94, 0.66)); }
+  60% { transform: scale(1); filter: none; }
+  63% { transform: scale(1.02); filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.52)) drop-shadow(0 0 24px rgba(34, 197, 94, 0.64)); }
+  66% { transform: scale(1); filter: none; }
+  69% { transform: scale(1.02); filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 24px rgba(34, 197, 94, 0.62)); }
+  72% { transform: scale(1); filter: none; }
+  75% { transform: scale(1.02); filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.48)) drop-shadow(0 0 22px rgba(34, 197, 94, 0.6)); }
+  78% { transform: scale(1.02); filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.55)) drop-shadow(0 0 30px rgba(34, 197, 94, 0.75)); }
+  84% { transform: scale(1); filter: none; }
   92% {
     transform: scale(1);
     filter: none;
