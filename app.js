@@ -524,6 +524,9 @@
   function updateFullscreenUi() {
     var active = isAppFullscreen();
     if (appRoot) appRoot.classList.toggle("is-fs-active", active);
+    if (appRoot) {
+      appRoot.classList.toggle("is-menu-visible", false);
+    }
     if (!btnFullscreen) return;
     var iconEnter = btnFullscreen.querySelector(".icon-fs-enter");
     var iconExit = btnFullscreen.querySelector(".icon-fs-exit");
@@ -542,6 +545,30 @@
     document.addEventListener("fullscreenchange", updateFullscreenUi);
     document.addEventListener("webkitfullscreenchange", updateFullscreenUi);
     document.addEventListener("MSFullscreenChange", updateFullscreenUi);
+  }
+
+  if (appRoot) {
+    appRoot.addEventListener("click", function (e) {
+      if (!isAppFullscreen()) return;
+      if (!appRoot) return;
+
+      // 버튼/입력 등 조작 요소 클릭은 메뉴 토글하지 않음
+      if (
+        e.target.closest("button") ||
+        e.target.closest("input") ||
+        e.target.closest("select") ||
+        e.target.closest("textarea") ||
+        e.target.closest("a") ||
+        e.target.closest("label")
+      ) {
+        return;
+      }
+
+      // 모달이 열려 있을 땐 토글하지 않음
+      if (e.target.closest(".modal") && !e.target.closest(".modal[hidden]")) return;
+
+      appRoot.classList.toggle("is-menu-visible");
+    });
   }
 
   function renderPresetList() {

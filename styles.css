@@ -61,6 +61,7 @@ body {
   flex-shrink: 0;
   border-bottom: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.04);
+  transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .logo {
@@ -241,6 +242,18 @@ body {
 .app.is-fs-active {
   --fs-banner-reserve: clamp(5.5rem, 22vh, 12rem);
   padding: clamp(0.5rem, 2vh, 1.25rem) clamp(0.75rem, 3vw, 2rem) 0;
+}
+
+.app.is-fs-active .header {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+.app.is-fs-active.is-menu-visible .header {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .app.is-fs-active .site-footer {
