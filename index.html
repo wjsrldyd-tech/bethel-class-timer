@@ -45,7 +45,7 @@
 
     <main class="timer-grid count-1" id="timer-grid">
       <article class="timer-card" data-index="0">
-        <input type="text" class="timer-title" maxlength="40" placeholder="고등 모의 시험" aria-label="타이머 1 제목" />
+        <div class="timer-title" data-placeholder="고등 모의 시험" aria-label="타이머 1 제목"></div>
         <div class="timer-display" aria-live="polite">00:00</div>
         <div class="timer-actions">
           <button type="button" class="btn btn-edit" data-action="edit">타이머 수정</button>
@@ -54,7 +54,7 @@
         </div>
       </article>
       <article class="timer-card timer-card--slot2" data-index="1">
-        <input type="text" class="timer-title" maxlength="40" placeholder="고등 모의 시험" aria-label="타이머 2 제목" />
+        <div class="timer-title" data-placeholder="고등 모의 시험" aria-label="타이머 2 제목"></div>
         <div class="timer-display" aria-live="polite">00:00</div>
         <div class="timer-actions">
           <button type="button" class="btn btn-edit" data-action="edit">타이머 수정</button>
@@ -63,7 +63,7 @@
         </div>
       </article>
       <article class="timer-card timer-card--slot3" data-index="2">
-        <input type="text" class="timer-title" maxlength="40" placeholder="고등 모의 시험" aria-label="타이머 3 제목" />
+        <div class="timer-title" data-placeholder="고등 모의 시험" aria-label="타이머 3 제목"></div>
         <div class="timer-display" aria-live="polite">00:00</div>
         <div class="timer-actions">
           <button type="button" class="btn btn-edit" data-action="edit">타이머 수정</button>
@@ -81,6 +81,20 @@
       <div class="modal__panel modal__panel--settings" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
         <h2 id="settings-modal-title" class="modal__title">타이머 프리셋</h2>
         <p class="modal__hint">이름과 시간을 저장해 두었다가 타이머에 한 번에 적용할 수 있습니다. (이 브라우저에만 저장)</p>
+      <div class="preset-apply-bar">
+        <label class="preset-apply-label">
+          타이머 제목 변경
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <select id="timer-title-target" class="preset-select" aria-label="제목 변경 타이머 선택">
+              <option value="0">타이머 1</option>
+              <option value="1">타이머 2</option>
+              <option value="2">타이머 3</option>
+            </select>
+            <input type="text" id="timer-title-input" maxlength="40" placeholder="예: 고등 모의 시험" aria-label="타이머 제목 입력" />
+            <button type="button" class="btn btn-modal-save" id="timer-title-save-btn">적용</button>
+          </div>
+        </label>
+      </div>
         <div class="preset-apply-bar">
           <label class="preset-apply-label">
             적용할 타이머

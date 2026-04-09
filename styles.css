@@ -587,9 +587,15 @@ body {
   font-size: 0.9375rem;
   font-weight: 400;
   text-align: center;
+  min-height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
 }
 
-.timer-title::placeholder {
+.timer-title:empty::before {
+  content: attr(data-placeholder);
   color: #555;
 }
 

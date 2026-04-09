@@ -50,6 +50,9 @@
   var presetNewSec = document.getElementById("preset-new-sec");
   var presetAddBtn = document.getElementById("preset-add-btn");
   var settingsCloseBtn = document.getElementById("settings-close-btn");
+  var timerTitleTarget = document.getElementById("timer-title-target");
+  var timerTitleInput = document.getElementById("timer-title-input");
+  var timerTitleSaveBtn = document.getElementById("timer-title-save-btn");
 
   var presetPickerModal = document.getElementById("preset-picker-modal");
   var presetPickerListEl = document.getElementById("preset-picker-list");
@@ -220,7 +223,7 @@
     var toggleBtn = card.querySelector(".btn-toggle");
 
     display.textContent = formatMMSS(getSecondsRemaining(t));
-    titleInput.value = t.title;
+    if (titleInput) titleInput.textContent = t.title || "";
 
     toggleBtn.textContent = pendingStart[index] ? "준비중" : t.endAt !== null ? "중지" : "시작";
     toggleBtn.classList.remove("is-running", "is-paused");
@@ -382,6 +385,18 @@
         t.remainingSeconds = t.presetSeconds;
         sec = t.presetSeconds;
       }
+
+      // 시작 멘트는 타이머 1개 표시 모드에서만 사용
+      if (timerCount !== 1) {
+        pendingStart[index] = false;
+        cancelStartBurst(cards[index]);
+        t.endAt = Date.now() + sec * 1000;
+        lastFormatted[index] = "";
+        syncCard(index);
+        persist();
+        return;
+      }
+
       pendingStart[index] = true;
       lastFormatted[index] = "";
       syncCard(index);
@@ -444,15 +459,6 @@
   }
 
   function bindCard(card, index) {
-    card.querySelector(".timer-title").addEventListener("change", function () {
-      timers[index].title = card.querySelector(".timer-title").value;
-      persist();
-    });
-    card.querySelector(".timer-title").addEventListener("blur", function () {
-      timers[index].title = card.querySelector(".timer-title").value;
-      persist();
-    });
-
     card.addEventListener("click", function (e) {
       var btn = e.target.closest("button");
       if (!btn) return;
@@ -749,6 +755,11 @@
   function openSettingsModal() {
     if (!settingsModal) return;
     syncApplyTargetOptions(presetApplyTarget);
+    syncApplyTargetOptions(timerTitleTarget);
+    if (timerTitleInput && timerTitleTarget) {
+      var ti = clamp(parseInt(timerTitleTarget.value, 10) || 0, 0, 2);
+      timerTitleInput.value = timers[ti].title || "";
+    }
     renderPresetList();
     settingsModal.hidden = false;
     if (presetNewTitle) presetNewTitle.focus();
@@ -821,6 +832,22 @@
   }
   if (presetAddBtn) {
     presetAddBtn.addEventListener("click", addPresetFromForm);
+  }
+  if (timerTitleTarget && timerTitleInput) {
+    timerTitleTarget.addEventListener("change", function () {
+      syncApplyTargetOptions(timerTitleTarget);
+      var ti = clamp(parseInt(timerTitleTarget.value, 10) || 0, 0, 2);
+      timerTitleInput.value = timers[ti].title || "";
+    });
+  }
+  if (timerTitleSaveBtn && timerTitleTarget && timerTitleInput) {
+    timerTitleSaveBtn.addEventListener("click", function () {
+      syncApplyTargetOptions(timerTitleTarget);
+      var ti = clamp(parseInt(timerTitleTarget.value, 10) || 0, 0, 2);
+      timers[ti].title = (timerTitleInput.value || "").trim();
+      syncCard(ti);
+      persist();
+    });
   }
 
   load();
