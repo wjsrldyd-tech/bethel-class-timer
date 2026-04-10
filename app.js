@@ -29,6 +29,9 @@
   /** @type {boolean[]} */
   var pendingStart = [false, false, false];
 
+  /** @type {(HTMLAudioElement | null)[]} */
+  var startNarrationAudio = [null, null, null];
+
   var appRoot = document.querySelector(".app");
   var grid = document.getElementById("timer-grid");
   var cards = document.querySelectorAll(".timer-card");
@@ -351,6 +354,22 @@
   var startBurstTimeouts = {};
 
   /**
+   * 시험 시작 나래이션(exam-start) 재생 중이면 중단
+   * @param {number} index
+   */
+  function stopStartNarration(index) {
+    var a = startNarrationAudio[index];
+    startNarrationAudio[index] = null;
+    if (!a) return;
+    try {
+      a.pause();
+      a.currentTime = 0;
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
+  /**
    * 시작 전광 애니메이션 중단 (재설정 등)
    * @param {Element | null} card
    */
@@ -365,6 +384,8 @@
   }
 
   function resetTimer(index) {
+    stopStartNarration(index);
+    pendingStart[index] = false;
     cancelStartBurst(cards[index]);
     var t = timers[index];
     t.endAt = null;
@@ -427,10 +448,12 @@
       try {
         if (cards[index]) triggerStartBurst(cards[index]);
         var voice = new Audio("assets/audio/exam-start.mp3");
+        startNarrationAudio[index] = voice;
         voice.volume = 0.8;
         voice.addEventListener(
           "ended",
           function () {
+            startNarrationAudio[index] = null;
             pendingStart[index] = false;
             cancelStartBurst(cards[index]);
             t.endAt = Date.now() + sec * 1000;
@@ -443,6 +466,7 @@
         var p = voice.play();
         if (p && typeof p.catch === "function") {
           p.catch(function () {
+            startNarrationAudio[index] = null;
             pendingStart[index] = false;
             cancelStartBurst(cards[index]);
             t.endAt = Date.now() + sec * 1000;
@@ -452,6 +476,7 @@
           });
         }
       } catch (e) {
+        startNarrationAudio[index] = null;
         pendingStart[index] = false;
         cancelStartBurst(cards[index]);
         t.endAt = Date.now() + sec * 1000;
