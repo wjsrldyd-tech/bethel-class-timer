@@ -285,7 +285,6 @@
     } else if (getSecondsRemaining(t) > 0) {
       toggleBtn.classList.add("is-paused");
     }
-    card.classList.toggle("finished", false);
   }
 
   var lastFormatted = ["", "", ""];
@@ -309,19 +308,7 @@
       if (t.endAt !== null && Date.now() >= t.endAt) {
         t.endAt = null;
         t.remainingSeconds = 0;
-        var c = cards[i];
-        playAlarmThenVoice("assets/audio/exam-end.mp3", 0.9, c);
-        c.classList.remove("finished");
-        void c.offsetWidth;
-        c.classList.add("finished");
-        c.addEventListener(
-          "animationend",
-          function onEnd() {
-            c.classList.remove("finished");
-            c.removeEventListener("animationend", onEnd);
-          },
-          { once: true }
-        );
+        playAlarmThenVoice("assets/audio/exam-end.mp3", 0.9, cards[i]);
         persist();
       }
       var sec = secNow;
