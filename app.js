@@ -139,6 +139,29 @@
     }
   }
 
+  /** 20·10·5분 알림: 먼저 짧은 알람(alam.mp3) 후 음성 안내 재생 */
+  function playAlarmThenVoice(voiceSrc, volume) {
+    var v = clamp(volume, 0, 1);
+    try {
+      var alarm = new Audio("assets/audio/alam.mp3");
+      alarm.volume = v;
+      alarm.addEventListener("ended", function () {
+        playAudio(voiceSrc, v);
+      });
+      alarm.addEventListener("error", function () {
+        playAudio(voiceSrc, v);
+      });
+      var p = alarm.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(function () {
+          playAudio(voiceSrc, v);
+        });
+      }
+    } catch (e) {
+      playAudio(voiceSrc, v);
+    }
+  }
+
   function persist() {
     try {
       var payload = {
@@ -245,9 +268,9 @@
       var prevSec = lastSecondsRemaining[i];
 
       if (t.endAt !== null && prevSec !== null) {
-        if (prevSec > 20 * 60 && secNow <= 20 * 60) playAudio("assets/audio/20m.mp3", 0.9);
-        if (prevSec > 10 * 60 && secNow <= 10 * 60) playAudio("assets/audio/10m.mp3", 0.9);
-        if (prevSec > 5 * 60 && secNow <= 5 * 60) playAudio("assets/audio/5m.mp3", 0.9);
+        if (prevSec > 20 * 60 && secNow <= 20 * 60) playAlarmThenVoice("assets/audio/20m.mp3", 0.9);
+        if (prevSec > 10 * 60 && secNow <= 10 * 60) playAlarmThenVoice("assets/audio/10m.mp3", 0.9);
+        if (prevSec > 5 * 60 && secNow <= 5 * 60) playAlarmThenVoice("assets/audio/5m.mp3", 0.9);
       }
 
       if (t.endAt !== null && Date.now() >= t.endAt) {
