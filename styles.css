@@ -596,7 +596,7 @@ body {
 
 .timer-title:empty::before {
   content: attr(data-placeholder);
-  color: #555;
+  color: inherit;
 }
 
 .timer-display {
