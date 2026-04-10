@@ -533,7 +533,7 @@ body {
 }
 
 .timer-card.finished {
-  animation: flash-done 6s ease-in-out;
+  animation: flash-done 13s ease-in-out;
 }
 
 @keyframes flash-done {

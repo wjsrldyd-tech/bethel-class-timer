@@ -279,7 +279,7 @@
       if (t.endAt !== null && Date.now() >= t.endAt) {
         t.endAt = null;
         t.remainingSeconds = 0;
-        playAudio("assets/audio/exam-end.mp3", 0.9);
+        playAlarmThenVoice("assets/audio/exam-end.mp3", 0.9);
         var c = cards[i];
         c.classList.remove("finished");
         void c.offsetWidth;
