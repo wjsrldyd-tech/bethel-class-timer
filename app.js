@@ -144,6 +144,8 @@
 
   /**
    * 알람 후 음성. 나레이션(알람+음성)이 끝날 때까지 해당 카드에 전광(timer-card--start-burst).
+   * ended 이벤트가 발화되지 않는 기기(삼성 전자칠판 등 Android 브라우저)를 위해
+   * 타임아웃 폴백을 사용하며, 중복 호출 방지 플래그로 PC 동작에 영향을 주지 않는다.
    * @param {string} voiceSrc
    * @param {number} volume
    * @param {Element | null} [card]
@@ -155,12 +157,26 @@
     var onVoiceEnded = opts.onVoiceEnded;
     var v = clamp(volume, 0, 1);
     if (card) triggerStartBurst(card);
+
+    // 중복 호출 방지 플래그
+    var voicePlayed = false;
+    var burstEnded = false;
+    var alarmFallbackTimer = null;
+    var voiceFallbackTimer = null;
+
     function endBurst() {
+      if (burstEnded) return;
+      burstEnded = true;
+      clearTimeout(voiceFallbackTimer);
       if (card) cancelStartBurst(card);
       if (narrationSlot !== undefined) startNarrationAudio[narrationSlot] = null;
       if (onVoiceEnded) onVoiceEnded();
     }
+
     function playVoice() {
+      if (voicePlayed) return;
+      voicePlayed = true;
+      clearTimeout(alarmFallbackTimer);
       try {
         var voice = new Audio(voiceSrc);
         voice.volume = v;
@@ -168,6 +184,11 @@
           var b = startNarrationAudio[narrationSlot] || {};
           b.voice = voice;
           startNarrationAudio[narrationSlot] = b;
+        }
+        // 음성 ended 이벤트 미발화 대비 폴백 (30초)
+        voiceFallbackTimer = setTimeout(endBurst, 30000);
+        if (narrationSlot !== undefined && startNarrationAudio[narrationSlot]) {
+          startNarrationAudio[narrationSlot].voiceFallback = voiceFallbackTimer;
         }
         voice.addEventListener("ended", endBurst);
         voice.addEventListener("error", endBurst);
@@ -177,12 +198,17 @@
         endBurst();
       }
     }
+
     try {
       var alarm = new Audio("assets/audio/alam.mp3");
       alarm.volume = v;
+      var bundle = { alarm: alarm };
       if (narrationSlot !== undefined) {
-        startNarrationAudio[narrationSlot] = { alarm: alarm };
+        startNarrationAudio[narrationSlot] = bundle;
       }
+      // alam.mp3 재생 후 ended 이벤트 미발화 대비 폴백 (5초)
+      alarmFallbackTimer = setTimeout(playVoice, 5000);
+      bundle.alarmFallback = alarmFallbackTimer;
       alarm.addEventListener("ended", playVoice);
       alarm.addEventListener("error", playVoice);
       var p = alarm.play();
@@ -379,6 +405,8 @@
     startNarrationAudio[index] = null;
     if (!bundle) return;
     try {
+      if (bundle.alarmFallback) clearTimeout(bundle.alarmFallback);
+      if (bundle.voiceFallback) clearTimeout(bundle.voiceFallback);
       if (bundle.alarm) {
         bundle.alarm.pause();
         bundle.alarm.currentTime = 0;
