@@ -206,8 +206,8 @@
       if (narrationSlot !== undefined) {
         startNarrationAudio[narrationSlot] = bundle;
       }
-      // alam.mp3 재생 후 ended 이벤트 미발화 대비 폴백 (5초)
-      alarmFallbackTimer = setTimeout(playVoice, 5000);
+      // alam.mp3 재생 후 ended 이벤트 미발화 대비 폴백 (2초)
+      alarmFallbackTimer = setTimeout(playVoice, 2000);
       bundle.alarmFallback = alarmFallbackTimer;
       alarm.addEventListener("ended", playVoice);
       alarm.addEventListener("error", playVoice);
