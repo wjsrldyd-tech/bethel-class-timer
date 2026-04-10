@@ -164,17 +164,6 @@
     var alarmFallbackTimer = null;
     var voiceFallbackTimer = null;
 
-    // alarm 생성과 동시에 voice도 미리 생성해 로드 시작
-    // → alarm이 재생되는 동안 파일이 메모리에 올라와 ended 직후 즉시 재생 가능
-    var voice = null;
-    try {
-      voice = new Audio(voiceSrc);
-      voice.volume = v;
-      voice.preload = "auto";
-    } catch (e) {
-      voice = null;
-    }
-
     function endBurst() {
       if (burstEnded) return;
       burstEnded = true;
@@ -189,7 +178,7 @@
       voicePlayed = true;
       clearTimeout(alarmFallbackTimer);
       try {
-        if (!voice) voice = new Audio(voiceSrc);
+        var voice = new Audio(voiceSrc);
         voice.volume = v;
         if (narrationSlot !== undefined) {
           var b = startNarrationAudio[narrationSlot] || {};
@@ -213,8 +202,7 @@
     try {
       var alarm = new Audio("assets/audio/alam.mp3");
       alarm.volume = v;
-      // voice를 미리 번들에 포함 → stopStartNarration에서 재설정 시 중단 가능
-      var bundle = { alarm: alarm, voice: voice };
+      var bundle = { alarm: alarm };
       if (narrationSlot !== undefined) {
         startNarrationAudio[narrationSlot] = bundle;
       }
