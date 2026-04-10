@@ -29,7 +29,7 @@
   /** @type {boolean[]} */
   var pendingStart = [false, false, false];
 
-  /** @type {(HTMLAudioElement | null)[]} */
+  /** @type {({ alarm?: HTMLAudioElement, voice?: HTMLAudioElement } | HTMLAudioElement | null)[]} */
   var startNarrationAudio = [null, null, null];
 
   var appRoot = document.querySelector(".app");
@@ -142,26 +142,53 @@
     }
   }
 
-  /** 20·10·5분 알림: 먼저 짧은 알람(alam.mp3) 후 음성 안내 재생 */
-  function playAlarmThenVoice(voiceSrc, volume) {
+  /**
+   * 알람 후 음성. 나레이션(알람+음성)이 끝날 때까지 해당 카드에 전광(timer-card--start-burst).
+   * @param {string} voiceSrc
+   * @param {number} volume
+   * @param {Element | null} [card]
+   * @param {{ narrationSlot?: number, onVoiceEnded?: () => void }} [opts]
+   */
+  function playAlarmThenVoice(voiceSrc, volume, card, opts) {
+    opts = opts || {};
+    var narrationSlot = opts.narrationSlot;
+    var onVoiceEnded = opts.onVoiceEnded;
     var v = clamp(volume, 0, 1);
+    if (card) triggerStartBurst(card);
+    function endBurst() {
+      if (card) cancelStartBurst(card);
+      if (narrationSlot !== undefined) startNarrationAudio[narrationSlot] = null;
+      if (onVoiceEnded) onVoiceEnded();
+    }
+    function playVoice() {
+      try {
+        var voice = new Audio(voiceSrc);
+        voice.volume = v;
+        if (narrationSlot !== undefined) {
+          var b = startNarrationAudio[narrationSlot] || {};
+          b.voice = voice;
+          startNarrationAudio[narrationSlot] = b;
+        }
+        voice.addEventListener("ended", endBurst);
+        voice.addEventListener("error", endBurst);
+        var pv = voice.play();
+        if (pv && typeof pv.catch === "function") pv.catch(endBurst);
+      } catch (e) {
+        endBurst();
+      }
+    }
     try {
       var alarm = new Audio("assets/audio/alam.mp3");
       alarm.volume = v;
-      alarm.addEventListener("ended", function () {
-        playAudio(voiceSrc, v);
-      });
-      alarm.addEventListener("error", function () {
-        playAudio(voiceSrc, v);
-      });
-      var p = alarm.play();
-      if (p && typeof p.catch === "function") {
-        p.catch(function () {
-          playAudio(voiceSrc, v);
-        });
+      if (narrationSlot !== undefined) {
+        startNarrationAudio[narrationSlot] = { alarm: alarm };
       }
+      alarm.addEventListener("ended", playVoice);
+      alarm.addEventListener("error", playVoice);
+      var p = alarm.play();
+      if (p && typeof p.catch === "function") p.catch(playVoice);
     } catch (e) {
-      playAudio(voiceSrc, v);
+      playVoice();
     }
   }
 
@@ -271,16 +298,19 @@
       var prevSec = lastSecondsRemaining[i];
 
       if (t.endAt !== null && prevSec !== null) {
-        if (prevSec > 20 * 60 && secNow <= 20 * 60) playAlarmThenVoice("assets/audio/20m.mp3", 0.9);
-        if (prevSec > 10 * 60 && secNow <= 10 * 60) playAlarmThenVoice("assets/audio/10m.mp3", 0.9);
-        if (prevSec > 5 * 60 && secNow <= 5 * 60) playAlarmThenVoice("assets/audio/5m.mp3", 0.9);
+        if (prevSec > 20 * 60 && secNow <= 20 * 60)
+          playAlarmThenVoice("assets/audio/20m.mp3", 0.9, cards[i]);
+        if (prevSec > 10 * 60 && secNow <= 10 * 60)
+          playAlarmThenVoice("assets/audio/10m.mp3", 0.9, cards[i]);
+        if (prevSec > 5 * 60 && secNow <= 5 * 60)
+          playAlarmThenVoice("assets/audio/5m.mp3", 0.9, cards[i]);
       }
 
       if (t.endAt !== null && Date.now() >= t.endAt) {
         t.endAt = null;
         t.remainingSeconds = 0;
-        playAlarmThenVoice("assets/audio/exam-end.mp3", 0.9);
         var c = cards[i];
+        playAlarmThenVoice("assets/audio/exam-end.mp3", 0.9, c);
         c.classList.remove("finished");
         void c.offsetWidth;
         c.classList.add("finished");
@@ -358,12 +388,22 @@
    * @param {number} index
    */
   function stopStartNarration(index) {
-    var a = startNarrationAudio[index];
+    var bundle = startNarrationAudio[index];
     startNarrationAudio[index] = null;
-    if (!a) return;
+    if (!bundle) return;
     try {
-      a.pause();
-      a.currentTime = 0;
+      if (bundle.alarm) {
+        bundle.alarm.pause();
+        bundle.alarm.currentTime = 0;
+      }
+      if (bundle.voice) {
+        bundle.voice.pause();
+        bundle.voice.currentTime = 0;
+      }
+      if (typeof bundle.pause === "function") {
+        bundle.pause();
+        bundle.currentTime = 0;
+      }
     } catch (e) {
       /* ignore */
     }
@@ -430,51 +470,21 @@
         sec = t.presetSeconds;
       }
 
-      // 시작 멘트는 타이머 1개 표시 모드에서만 사용
-      if (timerCount !== 1) {
-        pendingStart[index] = false;
-        cancelStartBurst(cards[index]);
-        t.endAt = Date.now() + sec * 1000;
-        lastFormatted[index] = "";
-        syncCard(index);
-        persist();
-        return;
-      }
-
       pendingStart[index] = true;
       lastFormatted[index] = "";
       syncCard(index);
 
       try {
-        if (cards[index]) triggerStartBurst(cards[index]);
-        var voice = new Audio("assets/audio/exam-start.mp3");
-        startNarrationAudio[index] = voice;
-        voice.volume = 0.8;
-        voice.addEventListener(
-          "ended",
-          function () {
-            startNarrationAudio[index] = null;
+        playAlarmThenVoice("assets/audio/exam-start.mp3", 0.8, cards[index], {
+          narrationSlot: index,
+          onVoiceEnded: function () {
             pendingStart[index] = false;
-            cancelStartBurst(cards[index]);
             t.endAt = Date.now() + sec * 1000;
             lastFormatted[index] = "";
             syncCard(index);
             persist();
           },
-          { once: true }
-        );
-        var p = voice.play();
-        if (p && typeof p.catch === "function") {
-          p.catch(function () {
-            startNarrationAudio[index] = null;
-            pendingStart[index] = false;
-            cancelStartBurst(cards[index]);
-            t.endAt = Date.now() + sec * 1000;
-            lastFormatted[index] = "";
-            syncCard(index);
-            persist();
-          });
-        }
+        });
       } catch (e) {
         startNarrationAudio[index] = null;
         pendingStart[index] = false;
